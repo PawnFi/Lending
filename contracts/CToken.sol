@@ -65,7 +65,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @param tokens The number of tokens to transfer
      * @return 0 if the transfer succeeded, else revert
      */
-    function transferTokens(address spender, address src, address dst, uint tokens) internal returns (uint) {
+    function transferTokens(address spender, address src, address dst, uint tokens) virtual internal returns (uint) {
         /* Fail if transfer not allowed */
         uint allowed = comptroller.transferAllowed(address(this), src, dst, tokens);
         if (allowed != 0) {
@@ -799,7 +799,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      * @param borrower The account having collateral seized
      * @param seizeTokens The number of cTokens to seize
      */
-    function seizeInternal(address seizerToken, address liquidator, address borrower, uint seizeTokens) internal {
+    function seizeInternal(address seizerToken, address liquidator, address borrower, uint seizeTokens) virtual internal {
         /* Fail if seize not allowed */
         uint allowed = comptroller.seizeAllowed(address(this), seizerToken, liquidator, borrower, seizeTokens);
         if (allowed != 0) {

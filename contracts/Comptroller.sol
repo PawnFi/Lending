@@ -7,7 +7,11 @@ import "./PriceOracle.sol";
 import "./ComptrollerInterface.sol";
 import "./ComptrollerStorage.sol";
 import "./Unitroller.sol";
-import "./Governance/Comp.sol";
+
+interface IPawnToken {
+    function balanceOf(address account) external view returns(uint256);
+    function transfer(address dst, uint rawAmount) external returns (bool);
+}
 
 /**
  * @title Compound's Comptroller Contract
@@ -1144,7 +1148,7 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
         return msg.sender == admin || msg.sender == comptrollerImplementation;
     }
 
-    /*** Comp Distribution ***/
+    /*** Pawn Distribution ***/
 
     /**
      * @notice Set COMP speed for a single market
@@ -1373,7 +1377,7 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
      * @return The amount of COMP which was NOT transferred to the user
      */
     function grantCompInternal(address user, uint amount) internal returns (uint) {
-        Comp comp = Comp(getCompAddress());
+        IPawnToken comp = IPawnToken(getCompAddress());
         uint compRemaining = comp.balanceOf(address(this));
         if (amount > 0 && amount <= compRemaining) {
             comp.transfer(user, amount);
@@ -1382,7 +1386,7 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
         return amount;
     }
 
-    /*** Comp Distribution Admin ***/
+    /*** Pawn Distribution Admin ***/
 
     /**
      * @notice Transfer COMP to the recipient

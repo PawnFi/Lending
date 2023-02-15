@@ -256,6 +256,32 @@ abstract contract CErc20Interface is CErc20Storage {
     function _addReserves(uint addAmount) virtual external returns (uint);
 }
 
+contract CNftStorage {
+    /**
+     * @notice Underlying asset for this CToken
+     */
+    address public underlying;
+    address public nftGateway;
+}
+abstract contract CNftInterface is CNftStorage {
+    /*** User Interface ***/
+    function mint(uint mintAmount) virtual external returns (uint);
+    function redeem(uint redeemTokens) virtual external returns (uint);
+    function redeemUnderlying(uint redeemAmount) virtual external returns (uint);
+    function redeemNft(address payable account, uint redeemAmount) virtual external returns (uint);
+    function borrow(uint borrowAmount) virtual external returns (uint);
+    function repayBorrow(uint repayAmount) virtual external returns (uint);
+    function repayBorrowBehalf(address borrower, uint repayAmount) virtual external returns (uint);
+    function liquidateBorrow(address borrower, uint repayAmount, CTokenInterface cTokenCollateral) virtual external returns (uint);
+    function sweepToken(EIP20NonStandardInterface token) virtual external;
+    
+    /*** Admin Functions ***/
+
+    function _addReserves(uint addAmount) virtual external returns (uint);
+    function _setNftGateway(address newNftGateway) virtual external returns (uint);
+}
+
+
 contract CDelegationStorage {
     /**
      * @notice Implementation address for this contract
