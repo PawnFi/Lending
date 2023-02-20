@@ -2,6 +2,7 @@
 pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
 import "@uniswap/v3-core/contracts/libraries/TickMath.sol";
@@ -211,11 +212,15 @@ contract FallbackOracle is AccessControl {
             secondsAgos[i] = uint32(twapInterval * (length - i - 1));
         }
 
-        address pool = IUniswapV3Factory(uniswapV3Factory).getPool(asset, WETH, 3000);
+        (address token0, address token1) = asset < WETH ? (asset, WETH) : (WETH, asset);
+        address pool = IUniswapV3Factory(uniswapV3Factory).getPool(token0, token1, 3000);
         if(pool == address(0)) {
             return 0;
         }
         (int56[] memory tickCumulatives, ) = IUniswapV3Pool(pool).observe(secondsAgos);
+
+        uint256 token0Decimals = IERC20Metadata(token0).decimals();
+        uint256 token1Decimals = IERC20Metadata(token1).decimals();
 
         // tick(imprecise as it's an integer) to price
         uint160[] memory sqrtPricesX96 = new uint160[](length - 1);
@@ -225,12 +230,13 @@ contract FallbackOracle is AccessControl {
                 int24((tickCumulatives[i + 1] - tickCumulatives[i]) / int56(uint56(twapInterval)))
             );
             uint256 priceX96 = FullMath.mulDiv(sqrtPricesX96[i], sqrtPricesX96[i], FixedPoint96.Q96);
-            totalPrice += FullMath.mulDiv(priceX96, BASE, FixedPoint96.Q96);
+            uint256 normalPrice = FullMath.mulDiv(priceX96, 10**token0Decimals, FixedPoint96.Q96);
+            totalPrice += FullMath.mulDiv(normalPrice, BASE, 10**token1Decimals);
         }
 
         uint256 price = totalPrice / (length - 1);
 
-        if(WETH != IUniswapV3Pool(pool).token1()) {
+        if(WETH != token1) {
             price = 1e36 / price;
         }
         return price;
