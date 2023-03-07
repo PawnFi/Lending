@@ -177,7 +177,7 @@ contract MultipleSourceAdvanceOracle is Ownable {
                 }
             }
         } else {
-            price = fallbackOracle.getAssetPrice(asset) * assetSourceInfo.fragment;
+            price = fallbackOracle.getAssetPrice(asset);
         }
         return getETHUSDPrice() * price / 1e18 / assetSourceInfo.fragment;
     }
