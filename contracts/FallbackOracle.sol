@@ -189,7 +189,7 @@ contract FallbackOracle is AccessControl {
      * @param asset asset address
      * @return Weighted price
      */
-    function feedTawpPrice(address asset) public view returns (uint256) {
+    function feedTwapPrice(address asset) public view returns (uint256) {
         uint256 roundId = _priceFeed[asset].roundId;
         if(roundId < 2) {
             ( , , uint newestPrice, ) = getNewestAssetPriceData(asset);
@@ -248,7 +248,7 @@ contract FallbackOracle is AccessControl {
      * @return assetPrice Asset price
      */
     function getAssetPrice(address asset) external view returns (uint256 assetPrice) {
-        uint256 feedPrice = feedTawpPrice(asset);
+        uint256 feedPrice = feedTwapPrice(asset);
         uint256 feedWeight = _priceFeed[asset].weight;
         assetPrice = feedPrice * feedWeight;
         
