@@ -4,6 +4,7 @@ pragma solidity ^0.8.10;
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "./INftGateway.sol";
 import "./CTokenInterfaces.sol";
 
@@ -24,7 +25,7 @@ interface IPToken {
  * @title Pawnfi's NftGateway Contract
  * @author Pawnfi
  */
-contract NftGateway is INftGateway, OwnableUpgradeable, ERC721HolderUpgradeable {
+contract NftGateway is INftGateway, OwnableUpgradeable, ERC721HolderUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     uint256 private constant BASE = 1e18;
@@ -87,6 +88,7 @@ contract NftGateway is INftGateway, OwnableUpgradeable, ERC721HolderUpgradeable 
     function initialize(address owner_, address transferManager_) external initializer {
         _transferOwnership(owner_);
         __ERC721Holder_init();
+        __ReentrancyGuard_init();
         transferManager = transferManager_;
     }
 
@@ -151,7 +153,7 @@ contract NftGateway is INftGateway, OwnableUpgradeable, ERC721HolderUpgradeable 
      * @param nftAddr nft contract address
      * @param nftIds nft id list
      */
-    function mintNft(address nftAddr, uint[] calldata nftIds) external {
+    function mintNft(address nftAddr, uint[] calldata nftIds) external nonReentrant {
         MarketInfo memory mInfo = marketInfo[nftAddr];
         require(mInfo.isListed, "Nft must be listed");
         require(nftIds.length > 0, "Nft list is null");
@@ -182,7 +184,7 @@ contract NftGateway is INftGateway, OwnableUpgradeable, ERC721HolderUpgradeable 
      * @param nftAddr nft contract address
      * @param indexes Index position corresponding to the nft id
      */
-    function redeemNft(address nftAddr, uint[] calldata indexes) public {
+    function redeemNft(address nftAddr, uint[] calldata indexes) public nonReentrant {
         MarketInfo memory mInfo = marketInfo[nftAddr];
         address market = mInfo.market;
         address underlying = mInfo.underlying;
