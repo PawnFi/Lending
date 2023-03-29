@@ -307,6 +307,23 @@ contract NftGateway is INftGateway, OwnableUpgradeable, ERC721HolderUpgradeable,
     }
 
     /**
+     * @notice Get the owner address of nft id
+     * @param account account address
+     * @param nftAddr nft address
+     * @param nftId nft id
+     * @return address owner address
+     */
+    function nftOwner(address account, address nftAddr, uint256 nftId) external view returns(address) {
+        uint length = _allNfts[nftAddr][account].length;
+        for(uint i = 0; i < length; i++) {
+            if(nftId == _allNfts[nftAddr][account][i]) {
+                return account;
+            }
+        }
+        return address(0);
+    }
+
+    /**
      * @notice Adjust the order of NFTs to prevent rare NFTs from being liquidated
      * @param nftAddr nft address
      * @param indexes Array of adjusted indices
