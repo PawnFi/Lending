@@ -81,7 +81,7 @@ contract MyContract {
 
 For any concerns with the protocol, open an issue or visit us on [Discord](https://discord.com/invite/pawnfi) to discuss.
 
-For security concerns, please email [support@security.pawnfi.com](mailto:support@security.pawnfi.com).
+For security concerns, please email [dev@pawnfi.com](mailto:dev@pawnfi.com).
 
 _© Copyright 2023, Pawnfi Ltd._
 
