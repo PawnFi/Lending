@@ -8,7 +8,7 @@ The Lending contract facilitates the support of collateralized borrowing and len
 
 ## Audits
 
-- PeckShield ( - ) : [report](./audits/audits.pdf) (Also available in Chinese in the same folder)
+- PeckShield: [report](./audits/PeckShield-Audit-Report-PawnFi-v1.0.pdf) (Also available in Chinese in the same folder)
 
 ## Contracts
 
