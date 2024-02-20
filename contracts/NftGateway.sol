@@ -153,7 +153,7 @@ contract NftGateway is INftGateway, OwnableUpgradeable, ERC721HolderUpgradeable,
      * @param nftAddr nft contract address
      * @param nftIds nft id list
      */
-    function mintNft(address nftAddr, uint[] calldata nftIds) external nonReentrant {
+    function mintNft(address nftAddr, uint[] calldata nftIds) external nonReentrant onlyEOA {
         MarketInfo memory mInfo = marketInfo[nftAddr];
         require(mInfo.isListed, "Nft must be listed");
         require(nftIds.length > 0, "Nft list is null");
@@ -184,9 +184,15 @@ contract NftGateway is INftGateway, OwnableUpgradeable, ERC721HolderUpgradeable,
      * @param nftAddr nft contract address
      * @param indexes Index position corresponding to the nft id
      */
-    function redeemNft(address nftAddr, uint[] calldata indexes) public nonReentrant {
+    function redeemNft(address nftAddr, uint[] calldata indexes) public nonReentrant onlyEOA {
+        _redeemNft(nftAddr, indexes);
+    }
+
+    function _redeemNft(address nftAddr, uint[] calldata indexes) internal {
         MarketInfo memory mInfo = marketInfo[nftAddr];
+        require(indexes.length > 0, "Nft list is null");
         address market = mInfo.market;
+        require(market != address(0), "Market not exist");
         address underlying = mInfo.underlying;
 
         uint256 redeemAmount = indexes.length * mInfo.pieceCount;
@@ -212,14 +218,15 @@ contract NftGateway is INftGateway, OwnableUpgradeable, ERC721HolderUpgradeable,
      * @param r r
      * @param s s
      */
-    function redeemNftWithPermit(address nftAddr, uint[] calldata indexes, uint deadline, bool approveMax, uint8 v, bytes32 r, bytes32 s) external {
+    function redeemNftWithPermit(address nftAddr, uint[] calldata indexes, uint deadline, bool approveMax, uint8 v, bytes32 r, bytes32 s) external onlyEOA {
         MarketInfo memory mInfo = marketInfo[nftAddr];
         address underlying = mInfo.underlying;
+        require(underlying != address(0), "Underlying not exist");
         uint256 redeemAmount = indexes.length * mInfo.pieceCount;
         uint value = approveMax ? type(uint256).max : redeemAmount;
         IPToken(underlying).permit(msg.sender, address(this), value, deadline, v, r, s);
 
-        redeemNft(nftAddr, indexes);
+        _redeemNft(nftAddr, indexes);
     }
 
     /**
@@ -328,7 +335,7 @@ contract NftGateway is INftGateway, OwnableUpgradeable, ERC721HolderUpgradeable,
      * @param nftAddr nft address
      * @param indexes Array of adjusted indices
      */
-    function adjustOrderForNft(address nftAddr, uint[] calldata indexes) external {
+    function adjustOrderForNft(address nftAddr, uint[] calldata indexes) external onlyEOA {
         uint[] storage nftIds = _allNfts[nftAddr][msg.sender];
         uint[] memory nftArrary = nftIds;
 
@@ -393,6 +400,11 @@ contract NftGateway is INftGateway, OwnableUpgradeable, ERC721HolderUpgradeable,
         uint pieceCount = marketInfo[nftAddr].pieceCount;
         uint accrualNftCount = pieceCount * nftCount;
         return surplus >= accrualNftCount;
+    }
+
+    modifier onlyEOA() {
+        require(tx.origin == msg.sender && address(msg.sender).code.length == 0, "Only EOA");
+        _;
     }
 }
 
